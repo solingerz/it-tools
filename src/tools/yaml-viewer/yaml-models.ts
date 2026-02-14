@@ -1,6 +1,5 @@
-import { type MaybeRef, get } from '@vueuse/core';
-
 import yaml from 'yaml';
+import { type MaybeRef, toValue } from 'vue';
 
 export { formatYaml };
 
@@ -13,11 +12,11 @@ function formatYaml({
   sortKeys?: MaybeRef<boolean>
   indentSize?: MaybeRef<number>
 }) {
-  const parsedYaml = yaml.parse(get(rawYaml));
+  const parsedYaml = yaml.parse(toValue(rawYaml));
 
   const formattedYAML = yaml.stringify(parsedYaml, {
-    sortMapEntries: get(sortKeys),
-    indent: get(indentSize),
+    sortMapEntries: toValue(sortKeys),
+    indent: toValue(indentSize),
   });
 
   return formattedYAML;

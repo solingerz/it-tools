@@ -1,6 +1,5 @@
-import { type MaybeRef, get } from '@vueuse/core';
 import QRCode, { type QRCodeToDataURLOptions } from 'qrcode';
-import { isRef, ref, watch } from 'vue';
+import { type MaybeRef, ref, toValue, watch } from 'vue';
 
 export const wifiEncryptions = ['WEP', 'WPA', 'nopass', 'WPA2-EAP'] as const;
 export type WifiEncryption = typeof wifiEncryptions[number];
@@ -114,25 +113,47 @@ export function useWifiQRCode({
   const encryption = ref<WifiEncryption>('WPA');
 
   watch(
-    [ssid, password, encryption, eapMethod, isHiddenSSID, eapAnonymous, eapIdentity, eapPhase2Method, background, foreground].filter(isRef),
-    async () => {
+    () => ({
+      ssid: toValue(ssid),
+      password: toValue(password),
+      encryption: toValue(encryption),
+      eapMethod: toValue(eapMethod),
+      isHiddenSSID: toValue(isHiddenSSID),
+      eapAnonymous: toValue(eapAnonymous),
+      eapIdentity: toValue(eapIdentity),
+      eapPhase2Method: toValue(eapPhase2Method),
+      background: toValue(background),
+      foreground: toValue(foreground),
+    }),
+    async ({
+      ssid: currentSsid,
+      password: currentPassword,
+      encryption: currentEncryption,
+      eapMethod: currentEapMethod,
+      isHiddenSSID: currentIsHiddenSSID,
+      eapAnonymous: currentEapAnonymous,
+      eapIdentity: currentEapIdentity,
+      eapPhase2Method: currentEapPhase2Method,
+      background: currentBackground,
+      foreground: currentForeground,
+    }) => {
       // @see https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config-android-ios-11
       // This is the full spec, there's quite a bit of logic to generate the string embeddedin the QR code.
       const text = getQrCodeText({
-        ssid: get(ssid),
-        password: get(password),
-        encryption: get(encryption),
-        eapMethod: get(eapMethod),
-        isHiddenSSID: get(isHiddenSSID),
-        eapAnonymous: get(eapAnonymous),
-        eapIdentity: get(eapIdentity),
-        eapPhase2Method: get(eapPhase2Method),
+        ssid: currentSsid,
+        password: currentPassword,
+        encryption: currentEncryption,
+        eapMethod: currentEapMethod,
+        isHiddenSSID: currentIsHiddenSSID,
+        eapAnonymous: currentEapAnonymous,
+        eapIdentity: currentEapIdentity,
+        eapPhase2Method: currentEapPhase2Method,
       });
       if (text) {
-        qrcode.value = await QRCode.toDataURL(get(text).trim(), {
+        qrcode.value = await QRCode.toDataURL(text.trim(), {
           color: {
-            dark: get(foreground),
-            light: get(background),
+            dark: currentForeground,
+            light: currentBackground,
             ...options?.color,
           },
           errorCorrectionLevel: 'M',

@@ -5,15 +5,11 @@ import DomPurify from 'dompurify';
 const props = withDefaults(defineProps<{ markdown?: string }>(), { markdown: '' });
 const { markdown } = toRefs(props);
 
-marked.use({
-  renderer: {
-    link(href, title, text) {
-      return `<a class="text-primary transition decoration-none hover:underline" href="${href}" target="_blank" rel="noopener">${text}</a>`;
-    },
-  },
+const html = computed(() => {
+  const parsedHtml = marked.parse(markdown.value) as string;
+  const htmlWithLinkStyle = parsedHtml.replaceAll('<a ', '<a class="text-primary transition decoration-none hover:underline" target="_blank" rel="noopener" ');
+  return DomPurify.sanitize(htmlWithLinkStyle, { ADD_ATTR: ['target'] });
 });
-
-const html = computed(() => DomPurify.sanitize(marked(markdown.value), { ADD_ATTR: ['target'] }));
 </script>
 
 <template>

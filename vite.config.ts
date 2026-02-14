@@ -56,6 +56,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       strategies: 'generateSW',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+      },
       manifest: {
         name: 'IT Tools',
         description: 'Aggregated set of useful tools for developers.',
@@ -102,6 +105,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      path: fileURLToPath(new URL('./src/shims/path.ts', import.meta.url)),
+      tls: fileURLToPath(new URL('./src/shims/tls.ts', import.meta.url)),
     },
   },
   define: {
@@ -112,5 +117,19 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    chunkSizeWarningLimit: 8192,
+    rollupOptions: {
+      onwarn(warning, warn) {
+        const message = warning.message || '';
+        const isDependencyEvalWarning = warning.code === 'EVAL'
+          && (message.includes('iarna-toml-esm') || message.includes('js-sha256'));
+
+        if (isDependencyEvalWarning) {
+          return;
+        }
+
+        warn(warning);
+      },
+    },
   },
 });

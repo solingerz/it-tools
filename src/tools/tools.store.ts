@@ -1,6 +1,6 @@
-import { type MaybeRef, get, useStorage } from '@vueuse/core';
+import { useStorage } from '@vueuse/core';
 import { defineStore } from 'pinia';
-import type { Ref } from 'vue';
+import { type MaybeRef, type Ref, toValue } from 'vue';
 import _ from 'lodash';
 import type { Tool, ToolCategory, ToolWithCategory } from './tools.types';
 import { toolsWithCategory } from './index';
@@ -45,19 +45,19 @@ export const useToolStore = defineStore('tools', () => {
     newTools: computed(() => tools.value.filter(({ isNew }) => isNew)),
 
     addToolToFavorites({ tool }: { tool: MaybeRef<Tool> }) {
-      const toolPath = get(tool).path;
+      const toolPath = toValue(tool).path;
       if (toolPath) {
         favoriteToolsName.value.push(toolPath);
       }
     },
 
     removeToolFromFavorites({ tool }: { tool: MaybeRef<Tool> }) {
-      favoriteToolsName.value = favoriteToolsName.value.filter(name => get(tool).name !== name && get(tool).path !== name);
+      favoriteToolsName.value = favoriteToolsName.value.filter(name => toValue(tool).name !== name && toValue(tool).path !== name);
     },
 
     isToolFavorite({ tool }: { tool: MaybeRef<Tool> }) {
-      return favoriteToolsName.value.includes(get(tool).name)
-        || favoriteToolsName.value.includes(get(tool).path);
+      return favoriteToolsName.value.includes(toValue(tool).name)
+        || favoriteToolsName.value.includes(toValue(tool).path);
     },
 
     updateFavoriteTools(newOrder: ToolWithCategory[]) {

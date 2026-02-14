@@ -12,7 +12,9 @@ const dockerRun = ref(
 const conversionResult = computed(() =>
   withDefaultOnError(() => composerize(dockerRun.value.trim()), { yaml: '', messages: [] }),
 );
-const dockerCompose = computed(() => conversionResult.value.yaml);
+const dockerCompose = computed(() =>
+  conversionResult.value.yaml.replace(/^version:\s*['"]?[\d.]+['"]?\s*\n+/, ''),
+);
 const notImplemented = computed(() =>
   conversionResult.value.messages.filter(msg => msg.type === MessageType.notImplemented).map(msg => msg.value),
 );

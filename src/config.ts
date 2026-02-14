@@ -1,75 +1,53 @@
-import { figue } from 'figue';
+type AppEnv = 'production' | 'development' | 'preview' | 'test';
 
-export const config = figue({
+function getEnvString(name: string, defaultValue = ''): string {
+  const value = import.meta.env[name];
+  return typeof value === 'string' ? value : defaultValue;
+}
+
+function getEnvBoolean(name: string, defaultValue = false): boolean {
+  const value = import.meta.env[name];
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return defaultValue;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (['true', '1', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+
+  if (['false', '0', 'no', 'off', ''].includes(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
+}
+
+function getAppEnv(name: string, defaultValue: AppEnv): AppEnv {
+  const value = getEnvString(name, defaultValue);
+  if (value === 'production' || value === 'development' || value === 'preview' || value === 'test') {
+    return value;
+  }
+  return defaultValue;
+}
+
+export const config = {
   app: {
-    version: {
-      doc: 'Application current version',
-      format: 'string',
-      default: '0.0.0',
-      env: 'PACKAGE_VERSION',
-    },
-    lastCommitSha: {
-      doc: 'Application last commit SHA version',
-      format: 'string',
-      default: '',
-      env: 'VITE_VERCEL_GIT_COMMIT_SHA',
-    },
-    baseUrl: {
-      doc: 'Application base url',
-      format: 'string',
-      default: '/',
-      env: 'BASE_URL',
-    },
-    env: {
-      doc: 'Application current env',
-      format: 'enum',
-      values: ['production', 'development', 'preview', 'test'],
-      default: 'development',
-      env: 'VITE_VERCEL_ENV',
-    },
+    version: getEnvString('PACKAGE_VERSION', '0.0.0'),
+    lastCommitSha: getEnvString('VITE_VERCEL_GIT_COMMIT_SHA', ''),
+    baseUrl: getEnvString('BASE_URL', '/'),
+    env: getAppEnv('VITE_VERCEL_ENV', 'development'),
   },
   plausible: {
-    isTrackerEnabled: {
-      doc: 'Is the tracker enabled',
-      format: 'boolean',
-      default: false,
-      env: 'VITE_TRACKER_ENABLED',
-    },
-    domain: {
-      doc: 'Plausible current domain',
-      format: 'string',
-      default: '',
-      env: 'VITE_PLAUSIBLE_DOMAIN',
-    },
-    apiHost: {
-      doc: 'Plausible remote api host',
-      format: 'string',
-      default: '',
-      env: 'VITE_PLAUSIBLE_API_HOST',
-    },
-    trackLocalhost: {
-      doc: 'Enable or disable localhost tracking by plausible',
-      format: 'boolean',
-      default: false,
-    },
+    isTrackerEnabled: getEnvBoolean('VITE_TRACKER_ENABLED', false),
+    domain: getEnvString('VITE_PLAUSIBLE_DOMAIN', ''),
+    apiHost: getEnvString('VITE_PLAUSIBLE_API_HOST', ''),
+    trackLocalhost: false,
   },
-  showBanner: {
-    doc: 'Show the banner',
-    format: 'boolean',
-    default: false,
-    env: 'VITE_SHOW_BANNER',
-  },
-  showSponsorBanner: {
-    doc: 'Show the sponsor banner',
-    format: 'boolean',
-    default: false,
-    env: 'VITE_SHOW_SPONSOR_BANNER',
-  },
-})
-  .loadEnv({
-    ...import.meta.env,
-    // Because the string 'import.meta.env.PACKAGE_VERSION' is statically replaced during build time (see 'define' in vite.config.ts)
-    PACKAGE_VERSION: import.meta.env.PACKAGE_VERSION,
-  })
-  .validate()
-  .getConfig();
+  showBanner: getEnvBoolean('VITE_SHOW_BANNER', false),
+  showSponsorBanner: getEnvBoolean('VITE_SHOW_SPONSOR_BANNER', false),
+};

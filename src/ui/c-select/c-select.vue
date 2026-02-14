@@ -165,7 +165,7 @@ function onSearchInput() {
       </div>
 
       <transition name="dropdown">
-        <div v-show="isOpen" class="c-select-dropdown" absolute z-10 mt-1 max-h-312px w-full overflow-y-auto pretty-scrollbar>
+        <div v-show="isOpen" class="c-select-dropdown" absolute z-10 mt-1 max-h-312px w-full overflow-y-auto>
           <template v-if="!filteredOptions.length">
             <slot name="empty">
               <div px-4 py-1 opacity-70>
@@ -227,6 +227,22 @@ function onSearchInput() {
     font-size: inherit;
     line-height: 1;
     padding: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: v-bind('theme.option.hover.backgroundColor') transparent;
+
+    &::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: v-bind('theme.option.hover.backgroundColor');
+      border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
 
     .c-select-dropdown-option{
       border-radius: 4px;
